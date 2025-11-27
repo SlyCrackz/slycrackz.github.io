@@ -108,18 +108,40 @@ h1 {
   transform: translateY(-8px);
   box-shadow: 0 16px 40px rgba(0,186,255,0.3);
 }
+.video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 16px 20px;
+}
 .video-label {
   text-align: center;
-  padding: 20px 20px 16px 20px;
   font-size: 1.15em;
   color: #00baff;
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.2s ease;
+  flex: 1;
 }
 .video-label:hover {
   color: #00ffe6;
+}
+.view-btn {
+  background: #00baff;
+  color: #0f1115;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85em;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.view-btn:hover {
+  background: #00ffe6;
+  transform: scale(1.05);
 }
 .video-container {
   position: relative;
@@ -264,27 +286,35 @@ function renderVideos(videos) {
     const wrapper = document.createElement('div');
     wrapper.className = 'video-wrapper';
 
+    const header = document.createElement('div');
+    header.className = 'video-header';
+
     const label = document.createElement('div');
     label.className = 'video-label';
     label.textContent = video.title;
 
-    label.addEventListener('click', (e) => {
-      e.stopPropagation();
+    label.addEventListener('click', () => {
       const fullLink = `${baseUrl}?video=${video.id}`;
       navigator.clipboard.writeText(fullLink)
         .then(() => alert(`Copied link: ${fullLink}`))
         .catch(err => console.error(err));
     });
 
-    wrapper.addEventListener('click', () => {
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'view-btn';
+    viewBtn.textContent = 'View';
+    viewBtn.addEventListener('click', () => {
       window.location.href = `${baseUrl}?video=${video.id}`;
     });
+
+    header.appendChild(label);
+    header.appendChild(viewBtn);
 
     const container = document.createElement('div');
     container.className = 'video-container';
     container.innerHTML = `<iframe allowfullscreen src="https://streamable.com/e/${video.id}?loop=0"></iframe>`;
 
-    wrapper.appendChild(label);
+    wrapper.appendChild(header);
     wrapper.appendChild(container);
 
     if (videoParam) {
