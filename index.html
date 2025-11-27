@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SF6  Dojo</title>
+  <title>SF6 Dojo</title>
   <style>
     body {
       background-color: #111;
@@ -15,10 +15,16 @@
       text-align: center;
       margin-bottom: 40px;
     }
+    #gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px; /* space between videos */
+      justify-content: center;
+    }
     .video-wrapper {
-      max-width: 800px;
-      width: 100%;
-      margin: 40px auto;
+      flex: 0 1 calc(50% - 20px); /* two per row, minus gap */
+      margin-bottom: 40px;
+      box-sizing: border-box;
     }
     .video-label {
       text-align: center;
@@ -48,6 +54,14 @@
       font-size: 0.9em;
       color: #ccc;
     }
+
+    /* Make single-video view full width */
+    body.single-video #gallery {
+      flex-wrap: nowrap;
+    }
+    body.single-video .video-wrapper {
+      flex: 1 1 100%;
+    }
   </style>
 </head>
 <body>
@@ -60,6 +74,9 @@ const gallery = document.getElementById('gallery');
 const baseUrl = window.location.origin + window.location.pathname;
 const params = new URLSearchParams(window.location.search);
 const videoParam = params.get('video'); // specific video to show
+
+// Add class if single video mode
+if (videoParam) document.body.classList.add('single-video');
 
 fetch('videos.txt')
   .then(response => response.text())
@@ -75,7 +92,6 @@ fetch('videos.txt')
       if (!match) return;
       const videoID = match[1];
 
-      // If a video ID is specified in URL, skip other videos
       if (videoParam && videoParam !== videoID) return;
       if (videoParam && videoParam === videoID) foundVideo = true;
 
@@ -101,7 +117,6 @@ fetch('videos.txt')
       wrapper.appendChild(label);
       wrapper.appendChild(container);
 
-      // Only show info when in single video mode
       if (videoParam) {
         const info = document.createElement('div');
         info.className = 'info';
@@ -112,15 +127,11 @@ fetch('videos.txt')
       gallery.appendChild(wrapper);
     });
 
-    // If ?video=ID is set but not found
     if (videoParam && !foundVideo) {
       gallery.innerHTML = '<p style="text-align:center;color:#f55;">Video not found!</p>';
     }
 
-    // If single video mode, hide gallery title
-    if (videoParam) {
-      document.querySelector('h1').style.display = 'none';
-    }
+    if (videoParam) document.querySelector('h1').style.display = 'none';
   })
   .catch(err => console.error('Failed to load videos.txt', err));
 </script>
