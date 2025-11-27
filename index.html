@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SF6 Archive</title>
+  <title>My Streamable Gallery</title>
   <style>
     body {
       background-color: #111;
@@ -10,6 +10,10 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
     }
     .video-wrapper {
       max-width: 800px;
@@ -22,37 +26,64 @@
       font-size: 1.2em;
       color: #ffcc00;
     }
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
 
-  <div class="video-wrapper">
-    <div class="video-label">First</div>
-    <div style="position:relative; width:100%; height:0px; padding-bottom:56.250%">
-      <iframe allow="fullscreen" allowfullscreen height="100%" src="https://streamable.com/e/kyav3l?loop=0" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe>
-    </div>
-  </div>
+  <h1>My Streamable Gallery</h1>
+  <div id="gallery"></div>
 
-  <div class="video-wrapper">
-    <div class="video-label">Second</div>
-    <div style="position:relative; width:100%; height:0px; padding-bottom:56.250%">
-      <iframe allow="fullscreen" allowfullscreen height="100%" src="https://streamable.com/e/hqyc4k?loop=0" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe>
-    </div>
-  </div>
+  <script>
+    // Load videos from external file
+    fetch('videos.txt')
+      .then(response => response.text())
+      .then(text => {
+        const gallery = document.getElementById('gallery');
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        
+        lines.forEach(line => {
+          // Format: title|link
+          const [title, link] = line.split('|').map(s => s.trim());
+          if (!title || !link) return;
 
-  <div class="video-wrapper">
-    <div class="video-label">Third</div>
-    <div style="position:relative; width:100%; height:0px; padding-bottom:56.250%">
-      <iframe allow="fullscreen" allowfullscreen height="100%" src="https://streamable.com/e/kyav3l?loop=0" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe>
-    </div>
-  </div>
+          // Extract Streamable ID
+          const match = link.match(/streamable\.com\/(?:e\/)?([a-zA-Z0-9]+)/);
+          if (!match) return;
+          const videoID = match[1];
 
-  <div class="video-wrapper">
-    <div class="video-label">Fourth</div>
-    <div style="position:relative; width:100%; height:0px; padding-bottom:56.250%">
-      <iframe allow="fullscreen" allowfullscreen height="100%" src="https://streamable.com/e/az0atc?loop=0" width="100%" style="border:none; width:100%; height:100%; position:absolute; left:0px; top:0px; overflow:hidden;"></iframe>
-    </div>
-  </div>
+          // Create wrapper
+          const wrapper = document.createElement('div');
+          wrapper.className = 'video-wrapper';
+
+          const label = document.createElement('div');
+          label.className = 'video-label';
+          label.textContent = title;
+
+          const container = document.createElement('div');
+          container.className = 'video-container';
+          container.innerHTML = `<iframe allowfullscreen src="https://streamable.com/e/${videoID}?loop=0"></iframe>`;
+
+          wrapper.appendChild(label);
+          wrapper.appendChild(container);
+          gallery.appendChild(wrapper);
+        });
+      })
+      .catch(err => console.error('Failed to load videos.txt', err));
+  </script>
 
 </body>
 </html>
