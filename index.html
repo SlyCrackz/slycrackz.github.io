@@ -40,7 +40,7 @@ h1 {
 }
 .video-label {
   text-align: center;
-  margin: 12px 0;
+  margin: 12px;
   font-size: 1.2em;
   color: #00baff;
   cursor: pointer;
@@ -52,9 +52,10 @@ h1 {
   color: #00ffe6;
 }
 .video-container {
-  position: relative;
   width: 100%;
-  height: 300px; /* gallery card height */
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  position: relative;
 }
 .video-container iframe {
   position: absolute;
@@ -63,12 +64,6 @@ h1 {
   width: 100%;
   height: 100%;
   border: none;
-}
-.info {
-  text-align: center;
-  margin: 10px 0 20px 0;
-  font-size: 0.9em;
-  color: #ccc;
 }
 
 /* SINGLE VIDEO THEATER MODE */
@@ -82,7 +77,8 @@ body.single-video .video-wrapper {
   max-width: 1200px;
 }
 body.single-video .video-container {
-  height: 900px; /* theater size */
+  height: 800px; /* larger theater size */
+  padding-bottom: 0; /* remove extra padding */
 }
 
 /* RESPONSIVE */
@@ -129,7 +125,6 @@ fetch('videos.txt')
       label.className = 'video-label';
       label.textContent = title;
 
-      // Copy link to clipboard
       label.addEventListener('click', () => {
         const fullLink = `${baseUrl}?video=${videoID}`;
         navigator.clipboard.writeText(fullLink)
