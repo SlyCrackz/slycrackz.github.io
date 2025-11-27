@@ -1,109 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SF6 Dojo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f1115, #1a1c22);
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<title>SF6 Dojo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body {
+  background: linear-gradient(135deg, #0f1115, #1a1c22);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 50px;
+  font-weight: 600;
+  font-size: 2.5em;
+  color: #00baff;
+  text-shadow: 0 0 12px rgba(0,186,255,0.7);
+}
+#gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+.video-wrapper {
+  flex: 0 1 calc(50% - 24px);
+  background: #1e2028;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.video-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+}
+.video-label {
+  text-align: center;
+  margin: 12px 0;
+  font-size: 1.2em;
+  color: #00baff;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.video-label:hover {
+  color: #00ffe6;
+}
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 50%; /* gallery thumbnail */
+}
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0 0 12px 12px;
+}
+.info {
+  text-align: center;
+  margin: 10px 0 20px 0;
+  font-size: 0.9em;
+  color: #ccc;
+}
 
-    h1 {
-      text-align: center;
-      margin-bottom: 50px;
-      font-weight: 600;
-      font-size: 2.5em;
-      color: #ffcc00;
-      text-shadow: 0 0 8px rgba(255, 204, 0, 0.7);
-    }
+/* SINGLE VIDEO THEATER MODE */
+body.single-video h1 { display: none; }
+body.single-video #gallery {
+  flex-direction: column;
+  align-items: center;
+}
+body.single-video .video-wrapper {
+  flex: 0 1 90%;
+  max-width: 1000px;
+}
+body.single-video .video-container {
+  padding-bottom: 56.25%; /* bigger theater ratio */
+}
 
-    #gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-      justify-content: center;
-    }
-
-    .video-wrapper {
-      flex: 0 1 calc(50% - 24px);
-      background: #1e2028;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .video-wrapper:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
-    }
-
-    .video-label {
-      text-align: center;
-      margin: 12px 0;
-      font-size: 1.2em;
-      color: #ffcc00;
-      cursor: pointer;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s ease;
-    }
-
-    .video-label:hover {
-      color: #ffe066;
-    }
-
-    .video-container {
-      position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%;
-    }
-
-    .video-container iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 0 0 12px 12px;
-    }
-
-    .info {
-      text-align: center;
-      margin: 10px 0 20px 0;
-      font-size: 0.9em;
-      color: #ccc;
-    }
-
-    /* Single-video theater mode */
-    body.single-video #gallery {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    body.single-video .video-wrapper {
-      flex: 0 1 80%;
-      max-width: 900px;
-      margin-bottom: 60px;
-    }
-
-    body.single-video .video-container {
-      padding-bottom: 50%;
-    }
-
-    @media (max-width: 768px) {
-      .video-wrapper {
-        flex: 0 1 100%;
-      }
-    }
-  </style>
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .video-wrapper { flex: 0 1 100%; }
+}
+</style>
 </head>
 <body>
 
@@ -132,6 +120,7 @@ fetch('videos.txt')
       if (!match) return;
       const videoID = match[1];
 
+      // Skip other videos if single-video mode
       if (videoParam && videoParam !== videoID) return;
       if (videoParam && videoParam === videoID) foundVideo = true;
 
@@ -141,6 +130,8 @@ fetch('videos.txt')
       const label = document.createElement('div');
       label.className = 'video-label';
       label.textContent = title;
+
+      // Copy link to clipboard
       label.addEventListener('click', () => {
         const fullLink = `${baseUrl}?video=${videoID}`;
         navigator.clipboard.writeText(fullLink)
@@ -168,8 +159,6 @@ fetch('videos.txt')
     if (videoParam && !foundVideo) {
       gallery.innerHTML = '<p style="text-align:center;color:#f55;">Video not found!</p>';
     }
-
-    if (videoParam) document.querySelector('h1').style.display = 'none';
   })
   .catch(err => console.error(err));
 </script>
