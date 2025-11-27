@@ -185,6 +185,10 @@ body.single-video .video-container {
 
 <div id="filters">
   <div class="filter-group">
+    <span class="filter-label">Player:</span>
+    <div id="player-filters"></div>
+  </div>
+  <div class="filter-group">
     <span class="filter-label">Opponent:</span>
     <div id="opponent-filters"></div>
   </div>
@@ -211,6 +215,7 @@ const videoParam = params.get('video');
 
 let allVideos = [];
 let activeFilters = {
+  player: null,
   opponent: null,
   control: null,
   result: null
@@ -222,11 +227,13 @@ if (videoParam) {
 }
 
 function parseVideoTitle(title) {
+  const playerMatch = title.match(/^([^\s]+)\s+VS/);
   const vsMatch = title.match(/VS\s+([^\s\[]+)/);
   const controlMatch = title.match(/\[([MC])\]/);
   const resultMatch = title.match(/\s([WL])\)/);
   
   return {
+    player: playerMatch ? playerMatch[1] : null,
     opponent: vsMatch ? vsMatch[1] : null,
     control: controlMatch ? controlMatch[1] : null,
     result: resultMatch ? resultMatch[1] : null
@@ -235,6 +242,7 @@ function parseVideoTitle(title) {
 
 function applyFilters() {
   const filtered = allVideos.filter(video => {
+    if (activeFilters.player && video.player !== activeFilters.player) return false;
     if (activeFilters.opponent && video.opponent !== activeFilters.opponent) return false;
     if (activeFilters.control && video.control !== activeFilters.control) return false;
     if (activeFilters.result && video.result !== activeFilters.result) return false;
@@ -289,6 +297,7 @@ fetch('videos.txt')
   .then(res => res.text())
   .then(text => {
     const lines = text.split('\n').filter(l => l.trim() !== '');
+    const players = new Set();
     const opponents = new Set();
 
     lines.forEach(line => {
@@ -304,16 +313,38 @@ fetch('videos.txt')
       const video = {
         id: videoID,
         title: title,
+        player: parsed.player,
         opponent: parsed.opponent,
         control: parsed.control,
         result: parsed.result
       };
 
+      if (parsed.player) players.add(parsed.player);
       if (parsed.opponent) opponents.add(parsed.opponent);
 
       if (videoParam && videoParam !== videoID) return;
       
       allVideos.push(video);
+    });
+
+    // Create player filter buttons
+    const playerFilters = document.getElementById('player-filters');
+    Array.from(players).sort().forEach(player => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.textContent = player;
+      btn.dataset.player = player;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-player]').forEach(b => b.classList.remove('active'));
+        if (activeFilters.player === player) {
+          activeFilters.player = null;
+        } else {
+          activeFilters.player = player;
+          btn.classList.add('active');
+        }
+        applyFilters();
+      });
+      playerFilters.appendChild(btn);
     });
 
     // Create opponent filter buttons
@@ -368,7 +399,7 @@ fetch('videos.txt')
 
     // Clear filters handler
     document.getElementById('clear-filters').addEventListener('click', () => {
-      activeFilters = { opponent: null, control: null, result: null };
+      activeFilters = { player: null, opponent: null, control: null, result: null };
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
       applyFilters();
     });
