@@ -268,11 +268,16 @@ function renderVideos(videos) {
     label.className = 'video-label';
     label.textContent = video.title;
 
-    label.addEventListener('click', () => {
+    label.addEventListener('click', (e) => {
+      e.stopPropagation();
       const fullLink = `${baseUrl}?video=${video.id}`;
       navigator.clipboard.writeText(fullLink)
         .then(() => alert(`Copied link: ${fullLink}`))
         .catch(err => console.error(err));
+    });
+
+    wrapper.addEventListener('click', () => {
+      window.location.href = `${baseUrl}?video=${video.id}`;
     });
 
     const container = document.createElement('div');
