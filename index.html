@@ -193,6 +193,11 @@ body.single-video .video-container {
     <button class="filter-btn" data-control="M">Modern</button>
     <button class="filter-btn" data-control="C">Classic</button>
   </div>
+  <div class="filter-group">
+    <span class="filter-label">Result:</span>
+    <button class="filter-btn" data-result="W">Win</button>
+    <button class="filter-btn" data-result="L">Loss</button>
+  </div>
   <button class="filter-btn clear-filters" id="clear-filters">Clear Filters</button>
 </div>
 
@@ -207,7 +212,8 @@ const videoParam = params.get('video');
 let allVideos = [];
 let activeFilters = {
   opponent: null,
-  control: null
+  control: null,
+  result: null
 };
 
 if (videoParam) {
@@ -218,10 +224,12 @@ if (videoParam) {
 function parseVideoTitle(title) {
   const vsMatch = title.match(/VS\s+([^\s\[]+)/);
   const controlMatch = title.match(/\[([MC])\]/);
+  const resultMatch = title.match(/\s([WL])\)/);
   
   return {
     opponent: vsMatch ? vsMatch[1] : null,
-    control: controlMatch ? controlMatch[1] : null
+    control: controlMatch ? controlMatch[1] : null,
+    result: resultMatch ? resultMatch[1] : null
   };
 }
 
@@ -229,6 +237,7 @@ function applyFilters() {
   const filtered = allVideos.filter(video => {
     if (activeFilters.opponent && video.opponent !== activeFilters.opponent) return false;
     if (activeFilters.control && video.control !== activeFilters.control) return false;
+    if (activeFilters.result && video.result !== activeFilters.result) return false;
     return true;
   });
   
@@ -296,7 +305,8 @@ fetch('videos.txt')
         id: videoID,
         title: title,
         opponent: parsed.opponent,
-        control: parsed.control
+        control: parsed.control,
+        result: parsed.result
       };
 
       if (parsed.opponent) opponents.add(parsed.opponent);
@@ -341,9 +351,24 @@ fetch('videos.txt')
       });
     });
 
+    // Result filter handlers
+    document.querySelectorAll('[data-result]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const result = btn.dataset.result;
+        document.querySelectorAll('[data-result]').forEach(b => b.classList.remove('active'));
+        if (activeFilters.result === result) {
+          activeFilters.result = null;
+        } else {
+          activeFilters.result = result;
+          btn.classList.add('active');
+        }
+        applyFilters();
+      });
+    });
+
     // Clear filters handler
     document.getElementById('clear-filters').addEventListener('click', () => {
-      activeFilters = { opponent: null, control: null };
+      activeFilters = { opponent: null, control: null, result: null };
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
       applyFilters();
     });
