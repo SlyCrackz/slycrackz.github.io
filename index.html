@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SF6 Dojo</title>
+<title id="page-title">SF6 Dojo</title>
+<meta property="og:site_name" content="SF6 Dojo">
+<meta property="og:type" content="video.other">
+<meta name="twitter:card" content="player">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {
@@ -89,8 +92,15 @@ body.single-video .video-container {
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-  .video-wrapper { flex: 0 1 100%; }
-  body.single-video .video-container { height: 60vh; }
+  #gallery {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 0 10px;
+  }
+  h1 {
+    font-size: 2em;
+    margin-bottom: 40px;
+  }
 }
 </style>
 </head>
@@ -121,8 +131,39 @@ fetch('videos.txt')
       if (!match) return;
       const videoID = match[1];
 
+      // Update meta tags for single video view
+      if (videoParam && videoParam === videoID) {
+        foundVideo = true;
+        document.getElementById('page-title').textContent = title;
+        
+        // Add Open Graph and Twitter Card meta tags for Discord embeds
+        const metaTags = [
+          { property: 'og:title', content: title },
+          { property: 'og:description', content: `Watch ${title} on SF6 Dojo` },
+          { property: 'og:url', content: `${baseUrl}?video=${videoID}` },
+          { property: 'og:video', content: `https://streamable.com/e/${videoID}` },
+          { property: 'og:video:secure_url', content: `https://streamable.com/e/${videoID}` },
+          { property: 'og:video:type', content: 'text/html' },
+          { property: 'og:video:width', content: '1280' },
+          { property: 'og:video:height', content: '720' },
+          { property: 'og:image', content: `https://cdn-cf-east.streamable.com/image/${videoID}.jpg` },
+          { name: 'twitter:title', content: title },
+          { name: 'twitter:player', content: `https://streamable.com/e/${videoID}` },
+          { name: 'twitter:player:width', content: '1280' },
+          { name: 'twitter:player:height', content: '720' },
+          { name: 'twitter:image', content: `https://cdn-cf-east.streamable.com/image/${videoID}.jpg` }
+        ];
+        
+        metaTags.forEach(tag => {
+          const meta = document.createElement('meta');
+          if (tag.property) meta.setAttribute('property', tag.property);
+          if (tag.name) meta.setAttribute('name', tag.name);
+          meta.setAttribute('content', tag.content);
+          document.head.appendChild(meta);
+        });
+      }
+
       if (videoParam && videoParam !== videoID) return;
-      if (videoParam && videoParam === videoID) foundVideo = true;
 
       const wrapper = document.createElement('div');
       wrapper.className = 'video-wrapper';
