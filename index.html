@@ -42,56 +42,88 @@
       height: 100%;
       border: none;
     }
+    .info {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
 
-  <h1>My Streamable Gallery</h1>
-  <div id="gallery"></div>
+<h1>My Streamable Gallery</h1>
+<div id="gallery"></div>
 
-  <script>
-    // Get the base URL of the page for copying
-    const baseUrl = window.location.origin + window.location.pathname;
+<script>
+const gallery = document.getElementById('gallery');
+const baseUrl = window.location.origin + window.location.pathname;
+const params = new URLSearchParams(window.location.search);
+const videoParam = params.get('video'); // specific video to show
 
-    fetch('videos.txt')
-      .then(response => response.text())
-      .then(text => {
-        const gallery = document.getElementById('gallery');
-        const lines = text.split('\n').filter(line => line.trim() !== '');
+fetch('videos.txt')
+  .then(response => response.text())
+  .then(text => {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    let foundVideo = false;
 
-        lines.forEach(line => {
-          const [title, link] = line.split('|').map(s => s.trim());
-          if (!title || !link) return;
+    lines.forEach(line => {
+      const [title, link] = line.split('|').map(s => s.trim());
+      if (!title || !link) return;
 
-          const match = link.match(/streamable\.com\/(?:e\/)?([a-zA-Z0-9]+)/);
-          if (!match) return;
-          const videoID = match[1];
+      const match = link.match(/streamable\.com\/(?:e\/)?([a-zA-Z0-9]+)/);
+      if (!match) return;
+      const videoID = match[1];
 
-          const wrapper = document.createElement('div');
-          wrapper.className = 'video-wrapper';
+      // If a video ID is specified in URL, skip other videos
+      if (videoParam && videoParam !== videoID) return;
+      if (videoParam && videoParam === videoID) foundVideo = true;
 
-          // Create clickable label
-          const label = document.createElement('div');
-          label.className = 'video-label';
-          label.textContent = title;
-          label.addEventListener('click', () => {
-            const fullLink = `${baseUrl}?video=${videoID}`;
-            navigator.clipboard.writeText(fullLink)
-              .then(() => alert(`Copied link: ${fullLink}`))
-              .catch(err => console.error('Failed to copy link', err));
-          });
+      const wrapper = document.createElement('div');
+      wrapper.className = 'video-wrapper';
 
-          const container = document.createElement('div');
-          container.className = 'video-container';
-          container.innerHTML = `<iframe allowfullscreen src="https://streamable.com/e/${videoID}?loop=0"></iframe>`;
+      const label = document.createElement('div');
+      label.className = 'video-label';
+      label.textContent = title;
 
-          wrapper.appendChild(label);
-          wrapper.appendChild(container);
-          gallery.appendChild(wrapper);
-        });
-      })
-      .catch(err => console.error('Failed to load videos.txt', err));
-  </script>
+      // Copy link to clipboard
+      label.addEventListener('click', () => {
+        const fullLink = `${baseUrl}?video=${videoID}`;
+        navigator.clipboard.writeText(fullLink)
+          .then(() => alert(`Copied link: ${fullLink}`))
+          .catch(err => console.error('Failed to copy link', err));
+      });
+
+      const container = document.createElement('div');
+      container.className = 'video-container';
+      container.innerHTML = `<iframe allowfullscreen src="https://streamable.com/e/${videoID}?loop=0"></iframe>`;
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(container);
+
+      // Only show info when in single video mode
+      if (videoParam) {
+        const info = document.createElement('div');
+        info.className = 'info';
+        info.textContent = `Share this video by clicking the title above`;
+        wrapper.appendChild(info);
+      }
+
+      gallery.appendChild(wrapper);
+    });
+
+    // If ?video=ID is set but not found
+    if (videoParam && !foundVideo) {
+      gallery.innerHTML = '<p style="text-align:center;color:#f55;">Video not found!</p>';
+    }
+
+    // If single video mode, hide gallery title
+    if (videoParam) {
+      document.querySelector('h1').style.display = 'none';
+    }
+  })
+  .catch(err => console.error('Failed to load videos.txt', err));
+</script>
 
 </body>
 </html>
