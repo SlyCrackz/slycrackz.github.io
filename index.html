@@ -25,6 +25,8 @@
       margin-bottom: 10px;
       font-size: 1.2em;
       color: #ffcc00;
+      cursor: pointer;
+      text-decoration: underline;
     }
     .video-container {
       position: relative;
@@ -48,30 +50,36 @@
   <div id="gallery"></div>
 
   <script>
-    // Load videos from external file
+    // Get the base URL of the page for copying
+    const baseUrl = window.location.origin + window.location.pathname;
+
     fetch('videos.txt')
       .then(response => response.text())
       .then(text => {
         const gallery = document.getElementById('gallery');
         const lines = text.split('\n').filter(line => line.trim() !== '');
-        
+
         lines.forEach(line => {
-          // Format: title|link
           const [title, link] = line.split('|').map(s => s.trim());
           if (!title || !link) return;
 
-          // Extract Streamable ID
           const match = link.match(/streamable\.com\/(?:e\/)?([a-zA-Z0-9]+)/);
           if (!match) return;
           const videoID = match[1];
 
-          // Create wrapper
           const wrapper = document.createElement('div');
           wrapper.className = 'video-wrapper';
 
+          // Create clickable label
           const label = document.createElement('div');
           label.className = 'video-label';
           label.textContent = title;
+          label.addEventListener('click', () => {
+            const fullLink = `${baseUrl}?video=${videoID}`;
+            navigator.clipboard.writeText(fullLink)
+              .then(() => alert(`Copied link: ${fullLink}`))
+              .catch(err => console.error('Failed to copy link', err));
+          });
 
           const container = document.createElement('div');
           container.className = 'video-container';
